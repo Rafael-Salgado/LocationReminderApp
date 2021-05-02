@@ -1,0 +1,8 @@
+/local.properties
+/app/src/debug/res/values/google_maps_api.xml
+/.gradle/
+/app/build/
+/app/google-services.json
+/.idea/
+/build/
+/app/src/release/res/values/google_maps_api.xml
