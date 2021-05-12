@@ -56,6 +56,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { permission ->
             if (permission) {
                 enableMyLocation()
+            }else{
+                Snackbar.make(
+                    binding.root,
+                    R.string.location_required_error, Snackbar.LENGTH_SHORT).show()
             }
         }
 

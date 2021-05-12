@@ -41,30 +41,41 @@ class ReminderListFragment : BaseFragment() {
     override val _viewModel: RemindersListViewModel by viewModel()
     private lateinit var binding: FragmentRemindersBinding
 
-    private val permissionBackground = registerForActivityResult(ActivityResultContracts.RequestPermission()){permission->
-        if(permission==true){
-            checkDeviceLocationSettingsAndStartGeofence()
+    private val permissionBackground =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { permission ->
+            if (permission == true) {
+                checkDeviceLocationSettingsAndStartGeofence()
+            }else {
+                _viewModel.sendRequestPermissionMsg()
+            }
         }
-    }
 
     private val permissionLocation =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissionsMap ->
             when {
                 (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) -> {
-                    if(permissionsMap[Manifest.permission.ACCESS_FINE_LOCATION] == true &&
-                        permissionsMap[Manifest.permission.ACCESS_BACKGROUND_LOCATION] == true){
+                    if (permissionsMap[Manifest.permission.ACCESS_FINE_LOCATION] == true &&
+                        permissionsMap[Manifest.permission.ACCESS_BACKGROUND_LOCATION] == true
+                    ) {
                         checkDeviceLocationSettingsAndStartGeofence()
-                    }else{
+                    } else {
                         _viewModel.sendRequestPermissionMsg()
                     }
                 }
                 (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        permissionBackground.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                        if (permissionsMap[Manifest.permission.ACCESS_FINE_LOCATION] == true)
+                            permissionBackground.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                        else {
+                            _viewModel.sendRequestPermissionMsg()
+                        }
                     }
-                }else -> {
-                    if (permissionsMap[Manifest.permission.ACCESS_FINE_LOCATION] == true){
+                }
+                else -> {
+                    if (permissionsMap[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
                         checkDeviceLocationSettingsAndStartGeofence()
+                    } else {
+                        _viewModel.sendRequestPermissionMsg()
                     }
                 }
             }
@@ -99,11 +110,7 @@ class ReminderListFragment : BaseFragment() {
         binding.addReminderFAB.setOnClickListener {
             navigateToAddReminder()
         }
-        _viewModel.authenticationState.observe(viewLifecycleOwner, Observer { authenticationState ->
-            if (authenticationState == RemindersListViewModel.AuthenticationState.UNAUTHENTICATED) {
-                starLoginActivity()
-            }
-        })
+
         if (foregroundAndBackgroundLocationPermissionApproved()) {
             checkDeviceLocationSettingsAndStartGeofence()
         } else {
@@ -116,12 +123,6 @@ class ReminderListFragment : BaseFragment() {
         super.onResume()
         //load the reminders list on the ui
         _viewModel.loadReminders()
-    }
-
-
-    private fun starLoginActivity() {
-        val intent = Intent(activity, AuthenticationActivity::class.java)
-        startActivity(intent)
     }
 
     private fun navigateToAddReminder() {
@@ -137,7 +138,7 @@ class ReminderListFragment : BaseFragment() {
         val adapter = RemindersListAdapter {
         }
 //        setup the recycler view using the extension function
-        binding.reminderssRecyclerView.setup(adapter)
+        binding.remindersRecyclerView.setup(adapter)
     }
 
     private fun foregroundAndBackgroundLocationPermissionApproved(): Boolean {
@@ -202,9 +203,9 @@ class ReminderListFragment : BaseFragment() {
             }
         }
         locationSettingsResponseTask.addOnCompleteListener {
-             if ( it.isSuccessful ) {
-                 Log.d(TAG, "Location settings successful")
-             }
+            if (it.isSuccessful) {
+                Log.d(TAG, "Location settings successful")
+            }
         }
     }
 
