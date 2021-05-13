@@ -11,8 +11,7 @@ import androidx.test.espresso.action.ViewActions.*
 import androidx.test.espresso.assertion.ViewAssertions
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.udacity.project4.locationreminders.RemindersActivity
@@ -134,7 +133,32 @@ class RemindersActivityTest :
         onView(withText(location)).check(matches(ViewMatchers.isDisplayed()))
         // 9- Make sure the activity is closed
         activityScenario.close()
+    }
 
+    @Test
+    fun addNewReminder_incompleteData_showSnackBar()= runBlocking{
+        // 1- Clear the repository and define variables
+        val title = "Title1"
+        val description = "Description1"
+        repository.deleteAllReminders()
+        // 2- Start RemindersActivity
+        val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
+        dataBindingIdlingResource.monitorActivity(activityScenario) // LOOK HERE
+        // 3- Add a new reminder by clicking on the FAB button
+        onView(withId(R.id.addReminderFAB)).perform(click())
+        // 4- Add Title and description
+        onView(withId(R.id.reminderTitle)).perform(replaceText(title))
+        onView(withId(R.id.reminderDescription)).perform(replaceText(description))
+        // 5- Save the remainder
+        onView(withId(R.id.saveReminder)).perform(click())
+        // 6- Confirm that the snackbar displays the correct message
+        onView(withId(com.google.android.material.R.id.snackbar_text))
+            .check(matches(withText(R.string.err_select_location)))
+        onView(withText(R.string.err_select_location)).check(matches(withEffectiveVisibility(
+                Visibility.VISIBLE
+            )))
+        // 7- Make sure the activity is closed
+        activityScenario.close()
     }
 
 }

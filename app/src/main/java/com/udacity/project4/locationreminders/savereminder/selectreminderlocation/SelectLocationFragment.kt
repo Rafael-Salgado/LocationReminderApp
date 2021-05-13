@@ -56,10 +56,11 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { permission ->
             if (permission) {
                 enableMyLocation()
-            }else{
+            } else {
                 Snackbar.make(
                     binding.root,
-                    R.string.location_required_error, Snackbar.LENGTH_SHORT).show()
+                    R.string.location_required_error, Snackbar.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -100,7 +101,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
                 )
             )
         } catch (e: Resources.NotFoundException) {
-            Log.d(TAG,"Location on map",e)
+            Log.d(TAG, "Location on map", e)
         }
     }
 
@@ -141,8 +142,10 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         val currentLocation = LocationServices.getFusedLocationProviderClient(requireActivity())
         val task: Task<Location> = currentLocation.lastLocation
         task.addOnSuccessListener { location ->
-            val latLng = LatLng(location.latitude, location.longitude)
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+            location?.let {
+                val latLng = LatLng(location.latitude, location.longitude)
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+            }
         }
     }
 
